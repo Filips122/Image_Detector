@@ -1,0 +1,108 @@
+device: "cuda"
+seed: 42
+
+data:
+  root_dir: "data"
+  real_dir: "REAL_224"
+  fake_dir: "FAKE_224"
+  image_size: 224
+  max_images_total: 999999999
+  group_split_json: "artifacts/audit_split/split_groups.json"
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+  freq:
+    multiscale: true
+    scales: [1.0, 0.5, 0.25]
+    patch_fft: true
+    patch_grid: 2
+
+augment:
+  real:
+    jpeg_prob: 0.35
+    jpeg_quality_min: 45
+    jpeg_quality_max: 95
+    recompress_prob: 0.40
+    recompress_scale_min: 0.70
+    recompress_scale_max: 1.0
+    blur_prob: 0.20
+    blur_radius_min: 0.1
+    blur_radius_max: 0.9
+    noise_prob: 0.20
+    noise_sigma_min: 0.0
+    noise_sigma_max: 8.0
+    color_jitter_prob: 0.20
+    color_jitter_strength: 0.15
+    sharpen_prob: 0.10
+    sharpen_factor_min: 0.2
+    sharpen_factor_max: 0.8
+    denoise_prob: 0.0
+    residual_roi_prob: 0.10
+
+  fake:
+    jpeg_prob: 0.55
+    jpeg_quality_min: 30
+    jpeg_quality_max: 95
+    recompress_prob: 0.60
+    recompress_scale_min: 0.55
+    recompress_scale_max: 1.0
+    blur_prob: 0.30
+    blur_radius_min: 0.1
+    blur_radius_max: 1.2
+    noise_prob: 0.35
+    noise_sigma_min: 0.0
+    noise_sigma_max: 14.0
+    color_jitter_prob: 0.35
+    color_jitter_strength: 0.20
+    sharpen_prob: 0.35
+    sharpen_factor_min: 0.3
+    sharpen_factor_max: 1.2
+    denoise_prob: 0.20
+    denoise_h_min: 2
+    denoise_h_max: 8
+    residual_roi_prob: 0.35
+
+
+model:
+  backbone: "efficientnet_b2"
+  fusion_dim: 256
+  use_phase: false
+  pretrained_spatial: true
+  init_spatial_from_latest: true   # <-- usa el latest del pretrain spatial del mismo backbone
+
+train:
+  batch_size: 64
+  num_workers: 4
+  epochs: 40
+  lr: 0.0003
+  weight_decay: 0.0001
+  aux_loss_weight: 0.3
+  temperature_scaling: true
+  precision_min_for_safe_threshold: 0.80
+  freeze_spatial_epochs: 3
+  class_weights: [1.3, 1.0]
+  early_stopping:
+    enabled: true
+    patience: 6
+    min_epochs: 10
+    min_delta_score: 0.0005
+  selection:
+    recall_weight: 0.10        # score = AP + recall_weight*rec@pmin - penalizaciones
+    val_loss_weight: 0.20      # penaliza val_loss empeorando vs best_val_loss
+    gap_weight: 0.35           # penaliza gap (val_loss - train_eval_loss)
+    gap_target: 0.00
+  # --- estabilidad ---
+  grad_clip_norm: 1.0          # 0 o negativo => desactivar
+  label_smoothing: 0.0         # 0 => desactivar (recomendado 0.02~0.05 si overfit duro)
+  train_eval_subset: 4000      # nº de muestras de train para calcular train_eval_loss comparable
+  # --- scheduler opcional ---
+  scheduler:
+    name: "cosine"
+    warmup_epochs: 2
+    min_lr: 1.0e-6
+
+output:
+  checkpoint_dir: "artifacts/checkpoints"
+  report_dir: "artifacts/reports"
+  model_version: "dual_efficientnet_b2_v1"
