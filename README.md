@@ -11,18 +11,10 @@ py -3.11 -m venv .venv
 
 **Commands (Linux / macOS):**
 ```bash
-python3 -m venv .venv
-```
-
-```bash
 source .venv/bin/activate
 ```
 
 **Commands (Windows – PowerShell):**
-```bash
-python -m venv .venv
-```
-
 ```bash
 powershell -ExecutionPolicy Bypass
 ```
@@ -43,7 +35,7 @@ powershell -ExecutionPolicy Bypass
 **From the project root:**
 **Commands:**
 ```bash
-pip install --upgrade pip
+python.exe -m pip install --upgrade pip
 ```
 
 ```bash
@@ -140,14 +132,19 @@ curl.exe -X POST "http://localhost:8000/detect-image" `
 
 **Recommended Commands**
 ```bash
-🔹 python scripts/audit_and_split.py --root data --real REAL_224 --fake FAKE_224 --out artifacts/audit_split
+python data/download_data.py
 ```
+
 ```bash
-🔹 .\scripts\run_full_pretrain_and_dual.ps1
+python scripts/audit_and_split.py --root data --real REAL_224 --fake FAKE_224 --out artifacts/audit_split
+```
+
+```bash
+.\scripts\run_full_pretrain_and_dual.ps1
 ```
 
 
 **Future work**
 ```bash
-🔹 python scripts/analyze_real_errors.py --ckpt artifacts/checkpoints/runs/dual/swin_t/dual_swin_t_"lastest"/best.pt --which val
+python scripts/analyze_real_errors.py --ckpt artifacts/checkpoints/runs/dual/swin_t/dual_swin_t_"lastest"/best.pt --which val
 ```

@@ -1,21 +1,21 @@
 # scripts/run_full_pretrain_and_dual.ps1
 $ErrorActionPreference = "Stop"
 
-# Ir a la raíz del proyecto (padre de /scripts)
+# Go to the project root (parent of /scripts)
 Set-Location (Join-Path $PSScriptRoot "..")
 
 Write-Host "=============================================="
 Write-Host " AI IMAGE DETECTOR - FULL TRAIN + EVAL PIPELINE"
 Write-Host "=============================================="
 
-Write-Host "`n== Activando venv (si existe) =="
+Write-Host "`n== Activating venv (if it exists) =="
 $venvActivate = Join-Path (Get-Location) ".venv\Scripts\Activate.ps1"
 
 if (Test-Path $venvActivate) {
     . $venvActivate
-    Write-Host "Venv activado: $($env:VIRTUAL_ENV)"
+    Write-Host "Venv activated: $($env:VIRTUAL_ENV)"
 } else {
-    Write-Host "WARNING: No se encontró .venv. Continuo sin venv."
+    Write-Host "WARNING: .venv not found. Continuing without venv."
 }
 
 function Invoke-Step {
@@ -32,7 +32,7 @@ function Invoke-Step {
     Invoke-Expression $Command
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Falló: $Title"
+        throw "Failed: $Title"
     }
 }
 
@@ -44,7 +44,8 @@ Invoke-Step -Title "[SPATIAL 1/3] convnext_tiny" `
 Invoke-Step -Title "[SPATIAL 2/3] efficientnet_b2" `
     -Command "python -m src.train --config configs/config_gpu_spatial_efficientnet_b2.yaml --mode spatial"
 
-# Si quieres incluir swin también en spatial pretrain (recomendado si lo usas luego)
+# If you want to include swin in spatial pretraining as well
+# (recommended if you will use it later)
 Invoke-Step -Title "[SPATIAL 3/3] swin_t" `
     -Command "python -m src.train --config configs/config_gpu_spatial_swin_t.yaml --mode spatial"
 
